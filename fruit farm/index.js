@@ -4,7 +4,6 @@
 const rs = require("fs");
 const http = require(`http`);
 const url = require(`url`);
-const replaceTemplate = require(`./module/replaceTemplate`);
 
 const replaceTemplate = require(`./module/replaceTemplate`);
 const { default: slugify } = require("slugify");

@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const morgan = require('morgan');
 const AppError = require('./utils/appError');
+
 const errController = require('./controllers/errorController');
 const app = express();
 

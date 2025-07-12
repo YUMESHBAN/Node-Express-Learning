@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
@@ -44,6 +44,12 @@ userSchema.pre('save', async function (next) {
   this.passwordConfirm = undefined;
   next();
 });
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword,
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
 
 const User = mongoose.model('User', userSchema);
 

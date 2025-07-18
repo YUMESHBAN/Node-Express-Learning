@@ -1,9 +1,8 @@
 const Tour = require('../models/tourModel'); // make sure this exists
 const catchAsync = require('../utils/catchAsync');
-const APIFeatures = require('../utils/apiFeatures');
 const factory = require('./handlerFactory');
-const AppError = require('../utils/appError');
-const { deleteOne } = require('../models/reviewModel');
+//const AppError = require('../utils/appError');
+//const { deleteOne } = require('../models/reviewModel');
 
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = '5';
@@ -11,98 +10,18 @@ exports.aliasTopTours = (req, res, next) => {
   req.query.fields = 'name price  summary diffifulty';
   next();
 };
-//1) BUILD QUERY
-// const queryObj = { ...req.query };
-// const excludedFields = ['page', 'sort', 'limit', 'fields'];
-// excludedFields.forEach((el) => delete queryObj[el]);
 
-// //2) ADVANCED FILTERING
-// let queryStr = JSON.stringify(queryObj);
-// queryStr = queryStr.replace(/\b(gte|gt|lt|lte)\b/g, (match) => `$${match}`);
-
-// let query = Tour.find(JSON.parse(queryStr));
-
-// 3) SORTING
-// if (req.query.sort) {
-//   const sortBy = req.query.sort.split(',').join('');
-
-//   query = query.sort(sortBy);
-// } else {
-//   query = query.sort('-createdAt');
-// }
-
-//4) FIELD LIMITING
-// if (req.query.fields) {
-//   const field = req.query.fields.split(',').join('');
-//   query = query.select(field);
-// } else {
-//   query = query.select('-__v');
-// }
-//5)PAGINATION
-// const page = req.query.page * 1 || 1;
-// const limit = req.query.limit * 1 || 100;
-// const skip = (page - 1) * limit;
-// query = query.skip(skip).limit(limit);
-// if (req.query.page) {
-//   const numTours = await Tour.countDocuments();
-//   if (skip > numTours) throw new Error('This page does not exist');
-// }
-exports.getAllTours = catchAsync(async (req, res, next) => {
-  const features = new APIFeatures(Tour.find(), req.query)
-    .filter()
-    .sort()
-    .limitFields()
-    .paginate();
-  const tours = await features.query;
-  // const tours = await Tour.find()
-  //   .where('duration')
-  //   .equals(5)
-  //   .where('difficulty')
-  //   .equals('easy');
-
-  //SEND RESPONSE
-  res.status(200).json({
-    status: 'success',
-
-    results: tours.length,
-    data: {
-      tours,
-    },
-  });
-});
+exports.getAllTours = factory.getAll(Tour);
 
 //EXECUTE QUERY
 
-exports.getTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findById(req.params.id).populate('reviews');
-
-  if (!tour) {
-    return next(new AppError('No tour found with that ID', 404));
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: { tour },
-  });
-});
+exports.getTour = factory.getOne(Tour, { path: 'reviews' });
 
 exports.postTour = factory.createOne(Tour);
 
 exports.updateTour = factory.updateOne(Tour);
 
 exports.deleteTour = factory.deleteOne(Tour);
-// exports.deleteTour = catchAsync(async (req, res, next) => {
-//   const tour = await Tour.findByIdAndDelete(req.params.id);
-
-//   if (!tour) {
-//     return next(new AppError('No tour found with that ID', 404)); // ✅ next is defined
-//   }
-
-//   res.status(204).json({
-//     status: 'success',
-//     data: null,
-//   });
-// });
 
 exports.getTourStats = catchAsync(async (req, res) => {
   const minRating = Number(req.query.minRating) || 0;

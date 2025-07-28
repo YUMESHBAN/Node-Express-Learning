@@ -1,40 +1,40 @@
 const express = require('express');
+const userController = require('./../controllers/userController');
+const authController = require('./../controllers/authController');
 
-const userController = require('../controllers/userController');
-const authController = require('../controllers/authController');
+const router = express.Router();
 
-const userRouter = express.Router();
+router.post('/signup', authController.signup);
+router.post('/login', authController.login);
+router.get('/logout', authController.logout);
 
-userRouter.post('/signup', authController.signup);
-userRouter.post('/login', authController.login);
-userRouter.post('/forgotPassword', authController.forgotPassword);
-userRouter.patch('/resetPassword/:token', authController.resetPassword);
+router.post('/forgotPassword', authController.forgotPassword);
+router.patch('/resetPassword/:token', authController.resetPassword);
 
-userRouter.use(authController.protect);
+// Protect all routes after this middleware
+router.use(authController.protect);
 
-userRouter.patch(
-  '/updateMyPassword',
-
-  authController.updatePassword,
+router.patch('/updateMyPassword', authController.updatePassword);
+router.get('/me', userController.getMe, userController.getUser);
+router.patch(
+  '/updateMe',
+  userController.uploadUserPhoto,
+  userController.resizeUserPhoto,
+  userController.updateMe
 );
-userRouter.get(
-  '/me',
+router.delete('/deleteMe', userController.deleteMe);
 
-  userController.getMe,
-  userController.getUser,
-);
-userRouter.patch('/updateMe', userController.updateMe);
-userRouter.delete('/deleteMe', userController.deleteMe);
+router.use(authController.restrictTo('admin'));
 
-userRouter.use(authController.restrictTo('admin'));
-userRouter
+router
   .route('/')
   .get(userController.getAllUsers)
   .post(userController.createUser);
-userRouter
+
+router
   .route('/:id')
   .get(userController.getUser)
   .patch(userController.updateUser)
   .delete(userController.deleteUser);
 
-module.exports = userRouter;
+module.exports = router;
